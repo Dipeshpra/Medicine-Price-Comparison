@@ -1748,8 +1748,9 @@ def pharmacies_page() -> rx.Component:
             rx.el.div(
                 rxe.map(
                     rxe.map.tile_layer(
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                        attribution="&copy; OpenStreetMap contributors",
+                        url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+                        attribution='&copy; <a href="https://maps.google.com">Google Maps</a>',
+                        max_zoom=20,
                     ),
                     rx.cond(
                         (PharmacyState.location_status == "allowed")
