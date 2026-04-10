@@ -42,6 +42,13 @@ def footer() -> rx.Component:
                     rx.el.h4("Quick Links", class_name="font-bold mb-6 text-gray-900"),
                     rx.el.ul(
                         rx.el.li(
+                            rx.el.button(
+                                "Shop Medicines",
+                                on_click=lambda: MedicineState.set_nav("/shop"),
+                                class_name="text-gray-500 hover:text-teal-600 transition-colors hover:translate-x-1 inline-block",
+                            )
+                        ),
+                        rx.el.li(
                             rx.el.a(
                                 "About Jan Aushadhi",
                                 href="#",

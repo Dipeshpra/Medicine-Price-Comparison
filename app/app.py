@@ -6,11 +6,306 @@ from app.states.search_page_state import SearchPageState
 from app.states.dashboard_state import DashboardState
 from app.states.ai_compare_state import AICompareState
 from app.states.smart_features_state import SmartFeaturesState
+from app.states.shop_state import ShopState
 from app.components.navbar import navbar
 from app.components.search_bar import search_section
 from app.components.footer import footer
 from app.components.chat_widget import chat_widget
 from app.components.scanner import scanner_page
+from app.states.auth_state import AuthState
+
+
+def login_page() -> rx.Component:
+    return rx.el.main(
+        rx.el.header(
+            rx.el.div(
+                rx.el.div(
+                    rx.el.div(
+                        rx.icon("shield-plus", class_name="h-5 w-5 text-white"),
+                        class_name="bg-gradient-to-br from-teal-500 to-emerald-500 p-1.5 rounded-xl shadow-lg",
+                    ),
+                    rx.el.span(
+                        "MedSaver", class_name="text-xl font-black text-gray-900"
+                    ),
+                    class_name="flex items-center gap-2 cursor-pointer",
+                    on_click=lambda: rx.redirect("/"),
+                ),
+                class_name="max-w-7xl mx-auto px-4 h-16 flex items-center",
+            ),
+            class_name="bg-white/70 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-50",
+        ),
+        rx.el.div(
+            rx.el.div(
+                class_name="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-teal-50 to-white -z-10"
+            ),
+            rx.el.div(
+                rx.el.div(
+                    rx.el.div(
+                        rx.el.div(
+                            rx.el.button(
+                                "Login",
+                                on_click=AuthState.toggle_auth_tab,
+                                class_name=rx.cond(
+                                    AuthState.show_login,
+                                    "flex-1 py-4 text-sm font-black text-teal-600 border-b-2 border-teal-500",
+                                    "flex-1 py-4 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600",
+                                ),
+                            ),
+                            rx.el.button(
+                                "Sign Up",
+                                on_click=AuthState.toggle_auth_tab,
+                                class_name=rx.cond(
+                                    ~AuthState.show_login,
+                                    "flex-1 py-4 text-sm font-black text-teal-600 border-b-2 border-teal-500",
+                                    "flex-1 py-4 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600",
+                                ),
+                            ),
+                            class_name="flex border-b border-gray-100 mb-8",
+                        ),
+                        rx.cond(
+                            AuthState.show_login,
+                            rx.el.div(
+                                rx.el.div(
+                                    rx.el.h2(
+                                        "Welcome Back",
+                                        class_name="text-2xl font-black text-gray-900 mb-2",
+                                    ),
+                                    rx.el.p(
+                                        "Save more on your healthcare today.",
+                                        class_name="text-gray-500 text-sm mb-8",
+                                    ),
+                                    class_name="text-center",
+                                ),
+                                rx.el.form(
+                                    rx.el.div(
+                                        rx.el.label(
+                                            "Email Address",
+                                            class_name="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2",
+                                        ),
+                                        rx.el.div(
+                                            rx.icon(
+                                                "mail",
+                                                class_name="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400",
+                                            ),
+                                            rx.el.input(
+                                                name="email",
+                                                placeholder="Enter your email",
+                                                class_name="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all",
+                                            ),
+                                            class_name="relative",
+                                        ),
+                                        class_name="mb-6",
+                                    ),
+                                    rx.el.div(
+                                        rx.el.div(
+                                            rx.el.label(
+                                                "Password",
+                                                class_name="text-xs font-black text-gray-400 uppercase tracking-widest",
+                                            ),
+                                            rx.el.a(
+                                                "Forgot?",
+                                                href="#",
+                                                class_name="text-xs font-bold text-teal-600 hover:text-teal-700",
+                                            ),
+                                            class_name="flex justify-between items-center mb-2",
+                                        ),
+                                        rx.el.div(
+                                            rx.icon(
+                                                "lock",
+                                                class_name="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400",
+                                            ),
+                                            rx.el.input(
+                                                name="password",
+                                                type=rx.cond(
+                                                    AuthState.show_password,
+                                                    "text",
+                                                    "password",
+                                                ),
+                                                placeholder="••••••••",
+                                                class_name="w-full pl-12 pr-12 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all",
+                                            ),
+                                            rx.el.button(
+                                                rx.icon(
+                                                    rx.cond(
+                                                        AuthState.show_password,
+                                                        "eye-off",
+                                                        "eye",
+                                                    ),
+                                                    class_name="h-4 w-4 text-gray-400",
+                                                ),
+                                                on_click=AuthState.toggle_password_visibility,
+                                                type="button",
+                                                class_name="absolute right-4 top-1/2 -translate-y-1/2 hover:text-teal-600",
+                                            ),
+                                            class_name="relative",
+                                        ),
+                                        class_name="mb-6",
+                                    ),
+                                    rx.el.div(
+                                        rx.el.label(
+                                            rx.el.input(
+                                                type="checkbox",
+                                                class_name="mr-2 rounded border-gray-300 text-teal-600 focus:ring-teal-500",
+                                            ),
+                                            rx.el.span(
+                                                "Remember me",
+                                                class_name="text-sm text-gray-600 font-medium",
+                                            ),
+                                            class_name="flex items-center cursor-pointer",
+                                        ),
+                                        class_name="mb-8",
+                                    ),
+                                    rx.cond(
+                                        AuthState.login_error != "",
+                                        rx.el.div(
+                                            rx.icon(
+                                                "circle_alert",
+                                                class_name="h-4 w-4 mr-2",
+                                            ),
+                                            AuthState.login_error,
+                                            class_name="flex items-center p-3 bg-red-50 text-red-600 text-xs font-bold rounded-xl mb-6",
+                                        ),
+                                    ),
+                                    rx.el.button(
+                                        "Sign In",
+                                        type="submit",
+                                        class_name="w-full py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-black rounded-xl shadow-lg shadow-teal-500/20 hover:opacity-90 transition-all",
+                                    ),
+                                    on_submit=AuthState.handle_login,
+                                ),
+                                rx.el.div(
+                                    rx.el.div(class_name="h-px bg-gray-100 flex-1"),
+                                    rx.el.span(
+                                        "OR",
+                                        class_name="px-4 text-[10px] font-black text-gray-300",
+                                    ),
+                                    rx.el.div(class_name="h-px bg-gray-100 flex-1"),
+                                    class_name="flex items-center my-8",
+                                ),
+                                rx.el.div(
+                                    rx.el.p(
+                                        "Demo Access:",
+                                        class_name="text-[10px] font-black text-gray-400 uppercase mb-2",
+                                    ),
+                                    rx.el.div(
+                                        rx.el.p(
+                                            "Email: demo@medsaver.com",
+                                            class_name="text-xs font-bold text-teal-800",
+                                        ),
+                                        rx.el.p(
+                                            "Pass: demo123",
+                                            class_name="text-xs font-bold text-teal-800",
+                                        ),
+                                        class_name="p-3 bg-teal-50 rounded-xl border border-teal-100",
+                                    ),
+                                ),
+                                class_name="animate-in fade-in slide-in-from-left-4 duration-300",
+                            ),
+                            rx.el.div(
+                                rx.el.div(
+                                    rx.el.h2(
+                                        "Create Account",
+                                        class_name="text-2xl font-black text-gray-900 mb-2",
+                                    ),
+                                    rx.el.p(
+                                        "Join 10,000+ users saving on meds.",
+                                        class_name="text-gray-500 text-sm mb-8",
+                                    ),
+                                    class_name="text-center",
+                                ),
+                                rx.el.form(
+                                    rx.el.div(
+                                        rx.el.label(
+                                            "Full Name",
+                                            class_name="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2",
+                                        ),
+                                        rx.el.input(
+                                            name="name",
+                                            placeholder="John Doe",
+                                            class_name="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all",
+                                        ),
+                                        class_name="mb-6",
+                                    ),
+                                    rx.el.div(
+                                        rx.el.label(
+                                            "Email Address",
+                                            class_name="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2",
+                                        ),
+                                        rx.el.input(
+                                            name="email",
+                                            type="email",
+                                            placeholder="john@example.com",
+                                            class_name="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all",
+                                        ),
+                                        class_name="mb-6",
+                                    ),
+                                    rx.el.div(
+                                        rx.el.label(
+                                            "Phone Number",
+                                            class_name="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2",
+                                        ),
+                                        rx.el.input(
+                                            name="phone",
+                                            placeholder="+91-0000000000",
+                                            class_name="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all",
+                                        ),
+                                        class_name="mb-6",
+                                    ),
+                                    rx.el.div(
+                                        rx.el.label(
+                                            "Create Password",
+                                            class_name="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2",
+                                        ),
+                                        rx.el.input(
+                                            name="password",
+                                            type="password",
+                                            placeholder="Min. 6 characters",
+                                            class_name="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all",
+                                        ),
+                                        class_name="mb-6",
+                                    ),
+                                    rx.el.div(
+                                        rx.el.label(
+                                            "Confirm Password",
+                                            class_name="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2",
+                                        ),
+                                        rx.el.input(
+                                            name="confirm_password",
+                                            type="password",
+                                            placeholder="••••••••",
+                                            class_name="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all",
+                                        ),
+                                        class_name="mb-8",
+                                    ),
+                                    rx.cond(
+                                        AuthState.signup_error != "",
+                                        rx.el.div(
+                                            rx.icon(
+                                                "circle_alert",
+                                                class_name="h-4 w-4 mr-2",
+                                            ),
+                                            AuthState.signup_error,
+                                            class_name="flex items-center p-3 bg-red-50 text-red-600 text-xs font-bold rounded-xl mb-6",
+                                        ),
+                                    ),
+                                    rx.el.button(
+                                        "Create Account",
+                                        type="submit",
+                                        class_name="w-full py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-black rounded-xl shadow-lg shadow-teal-500/20 hover:opacity-90 transition-all",
+                                    ),
+                                    on_submit=AuthState.handle_signup,
+                                ),
+                                class_name="animate-in fade-in slide-in-from-right-4 duration-300",
+                            ),
+                        ),
+                        class_name="bg-white/80 backdrop-blur-2xl p-8 md:p-12 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/50 w-full max-w-md",
+                    ),
+                    class_name="flex-1 flex flex-col items-center justify-center p-4 min-h-[calc(100vh-64px)]",
+                )
+            ),
+        ),
+        class_name="min-h-screen bg-white font-['Inter']",
+    )
 
 
 def stat_card(icon_name: str, value: str, label: str, delay: str = "") -> rx.Component:
@@ -2648,6 +2943,470 @@ def wrapped_scanner_page() -> rx.Component:
     )
 
 
+def shop_page() -> rx.Component:
+    return rx.el.div(
+        navbar(),
+        rx.el.main(
+            rx.el.div(
+                rx.el.h1(
+                    "Online Medicine Store — Get Generic Medicines Delivered",
+                    class_name="text-3xl md:text-5xl font-black text-white text-center py-16 bg-gradient-to-r from-teal-600 to-emerald-500 rounded-3xl shadow-xl shadow-teal-500/20",
+                ),
+                class_name="max-w-7xl mx-auto px-4 py-8",
+            ),
+            rx.el.div(
+                rx.el.div(
+                    rx.el.input(
+                        placeholder="Search products...",
+                        on_change=ShopState.update_shop_search.debounce(300),
+                        class_name="flex-1 px-6 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none",
+                    ),
+                    rx.el.select(
+                        rx.el.option("All Categories", value="All"),
+                        rx.el.option("Analgesic", value="Analgesic"),
+                        rx.el.option("Antibiotic", value="Antibiotic"),
+                        rx.el.option("Pain Relief", value="Pain Relief"),
+                        on_change=ShopState.set_shop_category,
+                        class_name="px-6 py-3 bg-white border border-gray-200 rounded-xl outline-none appearance-none",
+                    ),
+                    rx.el.select(
+                        rx.el.option("Best Savings", value="savings"),
+                        rx.el.option("Price: Low to High", value="price_low"),
+                        rx.el.option("Price: High to Low", value="price_high"),
+                        rx.el.option("Name A-Z", value="name"),
+                        on_change=ShopState.set_shop_sort,
+                        class_name="px-6 py-3 bg-white border border-gray-200 rounded-xl outline-none appearance-none",
+                    ),
+                    class_name="flex flex-col md:flex-row gap-4 max-w-7xl mx-auto px-4 mb-8",
+                ),
+                rx.el.div(
+                    rx.foreach(
+                        ShopState.shop_medicines,
+                        lambda m: rx.el.div(
+                            rx.el.div(
+                                rx.el.h3(
+                                    m["generic_name"],
+                                    class_name="text-xl font-black text-gray-900 mb-1",
+                                ),
+                                rx.el.p(
+                                    f"Brand: {m['brand_name']}",
+                                    class_name="text-sm font-bold text-gray-500 mb-4",
+                                ),
+                                rx.el.div(
+                                    rx.el.span(
+                                        m["dosage_form"],
+                                        class_name="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full mr-2",
+                                    ),
+                                    rx.cond(
+                                        m["is_jan_aushadhi"],
+                                        rx.el.span(
+                                            "Jan Aushadhi",
+                                            class_name="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full",
+                                        ),
+                                    ),
+                                    class_name="flex items-center mb-6",
+                                ),
+                                rx.el.div(
+                                    rx.el.p(
+                                        "₹" + m["brand_price"].to_string(),
+                                        class_name="text-gray-400 line-through text-sm font-bold",
+                                    ),
+                                    rx.el.p(
+                                        "₹" + m["generic_price"].to_string(),
+                                        class_name="text-3xl font-black text-teal-600",
+                                    ),
+                                    class_name="mb-6",
+                                ),
+                                rx.el.button(
+                                    "Add to Cart",
+                                    on_click=lambda: ShopState.add_to_cart(m),
+                                    class_name="w-full py-3 bg-teal-500 text-white font-bold rounded-xl hover:bg-teal-600 transition-colors",
+                                ),
+                                class_name="p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-teal-200 transition-all",
+                            )
+                        ),
+                    ),
+                    class_name="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto px-4",
+                ),
+                class_name="mb-24",
+            ),
+            rx.cond(
+                ShopState.cart_count > 0,
+                rx.el.div(
+                    rx.el.div(
+                        rx.el.div(
+                            rx.el.span(
+                                ShopState.cart_count.to_string(),
+                                " items",
+                                class_name="text-white font-bold",
+                            ),
+                            rx.el.span(" | ", class_name="text-teal-200 mx-4"),
+                            rx.el.span(
+                                "₹" + ShopState.cart_total.to_string(),
+                                class_name="text-white font-black text-xl",
+                            ),
+                            class_name="flex items-center",
+                        ),
+                        rx.el.button(
+                            "View Cart →",
+                            on_click=lambda: rx.redirect("/cart"),
+                            class_name="px-6 py-2 bg-white text-teal-600 font-bold rounded-full hover:bg-gray-50",
+                        ),
+                        class_name="max-w-4xl mx-auto flex justify-between items-center bg-gray-900 p-4 rounded-2xl shadow-2xl",
+                    ),
+                    class_name="fixed bottom-8 left-0 w-full px-4 z-40 animate-in slide-in-from-bottom-10",
+                ),
+            ),
+        ),
+        footer(),
+        chat_widget(),
+        class_name="min-h-screen bg-gray-50 font-['Inter'] flex flex-col",
+    )
+
+
+def cart_page() -> rx.Component:
+    return rx.el.div(
+        navbar(),
+        rx.el.main(
+            rx.el.div(
+                rx.el.h1(
+                    "Your Cart", class_name="text-4xl font-black text-gray-900 mb-8"
+                ),
+                rx.cond(
+                    ShopState.cart_count > 0,
+                    rx.el.div(
+                        rx.el.div(
+                            rx.foreach(
+                                ShopState.cart_items,
+                                lambda item: rx.el.div(
+                                    rx.el.div(
+                                        rx.el.h3(
+                                            item["generic_name"],
+                                            class_name="font-bold text-gray-900 text-lg",
+                                        ),
+                                        rx.el.p(
+                                            item["salt_composition"],
+                                            class_name="text-xs text-gray-500 mb-2",
+                                        ),
+                                        rx.el.p(
+                                            "₹" + item["price"].to_string(),
+                                            class_name="font-black text-teal-600",
+                                        ),
+                                        class_name="flex-1",
+                                    ),
+                                    rx.el.div(
+                                        rx.el.button(
+                                            rx.icon("minus", class_name="w-4 h-4"),
+                                            on_click=lambda: ShopState.decrement_qty(
+                                                item["id"]
+                                            ),
+                                            class_name="p-2 bg-gray-100 rounded-lg hover:bg-gray-200",
+                                        ),
+                                        rx.el.span(
+                                            item["quantity"].to_string(),
+                                            class_name="font-bold px-4",
+                                        ),
+                                        rx.el.button(
+                                            rx.icon("plus", class_name="w-4 h-4"),
+                                            on_click=lambda: ShopState.increment_qty(
+                                                item["id"]
+                                            ),
+                                            class_name="p-2 bg-gray-100 rounded-lg hover:bg-gray-200",
+                                        ),
+                                        class_name="flex items-center",
+                                    ),
+                                    rx.el.div(
+                                        rx.el.p(
+                                            "₹"
+                                            + (
+                                                item["price"] * item["quantity"]
+                                            ).to_string(),
+                                            class_name="font-black text-gray-900 w-24 text-right",
+                                        ),
+                                        rx.el.button(
+                                            rx.icon(
+                                                "trash",
+                                                class_name="w-5 h-5 text-red-500",
+                                            ),
+                                            on_click=lambda: ShopState.remove_from_cart(
+                                                item["id"]
+                                            ),
+                                            class_name="ml-4 p-2 hover:bg-red-50 rounded-lg",
+                                        ),
+                                        class_name="flex items-center justify-end",
+                                    ),
+                                    class_name="flex flex-col md:flex-row items-center justify-between p-6 bg-white rounded-2xl mb-4 shadow-sm border border-gray-100",
+                                ),
+                            ),
+                            class_name="lg:col-span-2",
+                        ),
+                        rx.el.div(
+                            rx.el.div(
+                                rx.el.h3(
+                                    "Order Summary", class_name="font-bold text-xl mb-6"
+                                ),
+                                rx.el.div(
+                                    rx.el.span("Brand Equivalent Cost:"),
+                                    rx.el.span(
+                                        "₹" + ShopState.cart_brand_total.to_string(),
+                                        class_name="line-through text-gray-400",
+                                    ),
+                                    class_name="flex justify-between text-gray-500 mb-2",
+                                ),
+                                rx.el.div(
+                                    rx.el.span("Generic Cost:"),
+                                    rx.el.span(
+                                        "₹" + ShopState.cart_total.to_string(),
+                                        class_name="font-bold",
+                                    ),
+                                    class_name="flex justify-between text-gray-900 mb-4",
+                                ),
+                                rx.el.div(
+                                    rx.el.span("You Save:"),
+                                    rx.el.span(
+                                        "₹" + ShopState.cart_savings.to_string(),
+                                        class_name="font-black",
+                                    ),
+                                    class_name="flex justify-between text-green-600 bg-green-50 p-3 rounded-xl mb-4",
+                                ),
+                                rx.el.div(
+                                    rx.el.span("Delivery Fee:"),
+                                    rx.el.span(
+                                        rx.cond(
+                                            ShopState.delivery_fee == 0.0,
+                                            "FREE",
+                                            "₹" + ShopState.delivery_fee.to_string(),
+                                        ),
+                                        class_name="font-bold",
+                                    ),
+                                    class_name="flex justify-between text-gray-600 mb-6 pb-6 border-b",
+                                ),
+                                rx.el.div(
+                                    rx.el.span(
+                                        "Total Amount:", class_name="text-lg font-bold"
+                                    ),
+                                    rx.el.span(
+                                        "₹" + ShopState.order_total.to_string(),
+                                        class_name="text-2xl font-black text-teal-600",
+                                    ),
+                                    class_name="flex justify-between items-center mb-8",
+                                ),
+                                rx.el.button(
+                                    "Proceed to Checkout",
+                                    on_click=ShopState.go_to_checkout,
+                                    class_name="w-full py-4 bg-teal-600 text-white font-black rounded-xl hover:bg-teal-700 shadow-lg shadow-teal-600/20",
+                                ),
+                                class_name="p-8 bg-white rounded-3xl shadow-sm border border-gray-100",
+                            ),
+                            class_name="lg:col-span-1",
+                        ),
+                        class_name="grid grid-cols-1 lg:grid-cols-3 gap-8",
+                    ),
+                    rx.el.div(
+                        rx.icon(
+                            "shopping-bag",
+                            class_name="h-24 w-24 text-gray-200 mx-auto mb-6",
+                        ),
+                        rx.el.h3(
+                            "Your cart is empty",
+                            class_name="text-2xl font-bold text-gray-900 mb-4",
+                        ),
+                        rx.el.p(
+                            "Looks like you haven't added any generic medicines yet.",
+                            class_name="text-gray-500 mb-8",
+                        ),
+                        rx.el.button(
+                            "Browse Medicines",
+                            on_click=lambda: rx.redirect("/shop"),
+                            class_name="px-8 py-3 bg-teal-600 text-white font-bold rounded-full",
+                        ),
+                        class_name="text-center py-32",
+                    ),
+                ),
+                class_name="max-w-7xl mx-auto px-4 py-12",
+            )
+        ),
+        footer(),
+        chat_widget(),
+        class_name="min-h-screen bg-gray-50 font-['Inter'] flex flex-col",
+    )
+
+
+def checkout_page() -> rx.Component:
+    return rx.el.div(
+        navbar(),
+        rx.el.main(
+            rx.cond(
+                ShopState.order_placed,
+                rx.el.div(
+                    rx.el.div(
+                        rx.icon(
+                            "message_circle_check",
+                            class_name="h-24 w-24 text-green-500 mx-auto mb-6 animate-bounce",
+                        ),
+                        rx.el.h1(
+                            "Order Placed Successfully!",
+                            class_name="text-4xl font-black text-gray-900 mb-4",
+                        ),
+                        rx.el.p(
+                            "Order ID: #" + ShopState.last_order_id,
+                            class_name="text-lg font-bold text-gray-500 mb-8",
+                        ),
+                        rx.el.button(
+                            "Continue Shopping",
+                            on_click=ShopState.continue_shopping,
+                            class_name="px-8 py-4 bg-teal-600 text-white font-black rounded-xl hover:bg-teal-700 transition-colors",
+                        ),
+                        class_name="bg-white p-12 rounded-3xl shadow-xl max-w-2xl mx-auto text-center",
+                    ),
+                    class_name="py-24 px-4",
+                ),
+                rx.el.div(
+                    rx.el.h1(
+                        "Checkout", class_name="text-3xl font-black text-gray-900 mb-8"
+                    ),
+                    rx.el.form(
+                        rx.el.div(
+                            rx.el.div(
+                                rx.el.h3(
+                                    "Delivery Address",
+                                    class_name="text-xl font-bold mb-6",
+                                ),
+                                rx.el.div(
+                                    rx.el.input(
+                                        placeholder="Full Name",
+                                        name="name",
+                                        class_name="w-full p-3 bg-gray-50 rounded-xl mb-4 outline-none focus:ring-2 focus:ring-teal-500",
+                                    ),
+                                    rx.el.input(
+                                        placeholder="Phone Number",
+                                        name="phone",
+                                        class_name="w-full p-3 bg-gray-50 rounded-xl mb-4 outline-none focus:ring-2 focus:ring-teal-500",
+                                    ),
+                                    rx.el.input(
+                                        placeholder="Street Address",
+                                        name="address",
+                                        class_name="w-full p-3 bg-gray-50 rounded-xl mb-4 outline-none focus:ring-2 focus:ring-teal-500",
+                                    ),
+                                    rx.el.div(
+                                        rx.el.input(
+                                            placeholder="City",
+                                            name="city",
+                                            class_name="w-full p-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-teal-500",
+                                        ),
+                                        rx.el.input(
+                                            placeholder="PIN Code",
+                                            name="pincode",
+                                            class_name="w-full p-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-teal-500",
+                                        ),
+                                        class_name="grid grid-cols-2 gap-4 mb-4",
+                                    ),
+                                    class_name="mb-8",
+                                ),
+                                rx.el.h3(
+                                    "Payment Method",
+                                    class_name="text-xl font-bold mb-6",
+                                ),
+                                rx.el.div(
+                                    rx.el.label(
+                                        rx.el.input(
+                                            type="radio",
+                                            name="payment_method",
+                                            value="cod",
+                                            default_checked=ShopState.payment_method
+                                            == "cod",
+                                            class_name="mr-3 text-teal-600 focus:ring-teal-500",
+                                        ),
+                                        rx.el.span(
+                                            "Cash on Delivery (COD)",
+                                            class_name="font-bold",
+                                        ),
+                                        class_name="flex items-center p-4 border rounded-xl mb-4 cursor-pointer hover:bg-gray-50",
+                                    ),
+                                    rx.el.label(
+                                        rx.el.input(
+                                            type="radio",
+                                            name="payment_method",
+                                            value="upi",
+                                            default_checked=ShopState.payment_method
+                                            == "upi",
+                                            class_name="mr-3 text-teal-600 focus:ring-teal-500",
+                                        ),
+                                        rx.el.span(
+                                            "UPI Payment", class_name="font-bold"
+                                        ),
+                                        class_name="flex items-center p-4 border rounded-xl mb-4 cursor-pointer hover:bg-gray-50",
+                                    ),
+                                ),
+                                class_name="p-8 bg-white rounded-3xl shadow-sm",
+                            ),
+                            rx.el.div(
+                                rx.el.div(
+                                    rx.el.h3(
+                                        "Order Summary",
+                                        class_name="text-xl font-bold mb-6",
+                                    ),
+                                    rx.foreach(
+                                        ShopState.cart_items,
+                                        lambda item: rx.el.div(
+                                            rx.el.span(
+                                                item["generic_name"]
+                                                + " (x"
+                                                + item["quantity"].to_string()
+                                                + ")",
+                                                class_name="text-sm text-gray-600",
+                                            ),
+                                            rx.el.span(
+                                                "₹"
+                                                + (
+                                                    item["price"] * item["quantity"]
+                                                ).to_string(),
+                                                class_name="font-bold",
+                                            ),
+                                            class_name="flex justify-between items-center mb-3",
+                                        ),
+                                    ),
+                                    rx.el.div(class_name="h-px bg-gray-200 my-4"),
+                                    rx.el.div(
+                                        rx.el.span(
+                                            "Total Amount:",
+                                            class_name="text-lg font-bold",
+                                        ),
+                                        rx.el.span(
+                                            "₹" + ShopState.order_total.to_string(),
+                                            class_name="text-2xl font-black text-teal-600",
+                                        ),
+                                        class_name="flex justify-between items-center mb-8",
+                                    ),
+                                    rx.cond(
+                                        ShopState.checkout_error != "",
+                                        rx.el.p(
+                                            ShopState.checkout_error,
+                                            class_name="text-red-500 text-sm font-bold mb-4 bg-red-50 p-3 rounded-lg",
+                                        ),
+                                    ),
+                                    rx.el.button(
+                                        "Place Order",
+                                        type="submit",
+                                        class_name="w-full py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-black rounded-xl shadow-lg hover:opacity-90 transition-opacity",
+                                    ),
+                                    class_name="p-8 bg-white rounded-3xl shadow-sm sticky top-24",
+                                )
+                            ),
+                            class_name="grid grid-cols-1 lg:grid-cols-2 gap-8",
+                        ),
+                        on_submit=ShopState.place_order,
+                    ),
+                    class_name="max-w-5xl mx-auto px-4 py-8",
+                ),
+            )
+        ),
+        footer(),
+        chat_widget(),
+        class_name="min-h-screen bg-gray-50 font-['Inter'] flex flex-col",
+    )
+
+
 global_styles = """
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
@@ -2755,8 +3514,12 @@ app = rxe.App(
     ],
 )
 app.add_page(index, route="/")
+app.add_page(shop_page, route="/shop")
+app.add_page(cart_page, route="/cart")
+app.add_page(checkout_page, route="/checkout", on_load=AuthState.require_auth)
 app.add_page(results_page, route="/results")
 app.add_page(search_page_view, route="/search")
 app.add_page(wrapped_scanner_page, route="/scan")
 app.add_page(pharmacies_page, route="/pharmacies")
 app.add_page(insights_page, route="/insights")
+app.add_page(login_page, route="/login")

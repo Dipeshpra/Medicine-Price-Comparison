@@ -20,3 +20,17 @@
 - [x] Build drug interaction checker for multiple medicines with severity levels (severe/moderate/mild)
 - [x] Enhance Jan Aushadhi integration with government badge, price comparison, and nearest kendra
 - [x] Polish combined output structure: overpay alert → overview → explanation → alternatives → Jan Aushadhi → trends → cost optimizer → pharmacy ranking → community trust → interactions
+
+## Phase 4: Login/Signup Page & Auth State ✅
+- [x] Create AuthState with login/signup/logout, session tracking, user profile (name, email, phone, address)
+- [x] Build login page with email/password form, "Remember me", forgot password link
+- [x] Build signup page with name, email, phone, password, confirm password, validation
+- [x] Add auth-aware navbar (show user avatar + name when logged in, login/signup buttons when not)
+- [x] Protect cart and checkout routes behind auth guard (redirect to login if not logged in)
+
+## Phase 5: Online Medicine Shopping — Shop Page, Cart & Checkout ✅
+- [x] Create ShopState with cart management (add/remove/update qty), order history, checkout flow
+- [x] Build /shop page with medicine product cards (image placeholder, name, price, add-to-cart, qty selector)
+- [x] Build /cart page with cart items list, quantity controls, subtotal/total, "Proceed to Checkout" button
+- [x] Build /checkout page with delivery address form, order summary, payment method selection, place order
+- [x] Add cart icon with badge count in navbar, order confirmation toast, order success page

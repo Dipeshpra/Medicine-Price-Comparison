@@ -16,6 +16,10 @@ def nav_link(label: str, route: str) -> rx.Component:
     )
 
 
+from app.states.auth_state import AuthState
+from app.states.shop_state import ShopState
+
+
 def navbar() -> rx.Component:
     return rx.el.header(
         rx.el.nav(
@@ -42,16 +46,67 @@ def navbar() -> rx.Component:
                 ),
                 rx.el.div(
                     nav_link("Home", "/"),
+                    nav_link("Shop", "/shop"),
                     nav_link("Search", "/search"),
                     nav_link("Insights", "/insights"),
                     nav_link("Scan Prescription", "/scan"),
                     nav_link("Find Pharmacy", "/pharmacies"),
                     class_name="hidden md:flex items-center gap-8",
                 ),
-                rx.el.button(
-                    rx.icon("menu", class_name="h-6 w-6"),
-                    on_click=MedicineState.toggle_mobile_menu,
-                    class_name="md:hidden p-2 text-gray-600 hover:text-teal-600 transition-colors",
+                rx.el.div(
+                    rx.cond(
+                        AuthState.is_logged_in,
+                        rx.el.div(
+                            rx.el.div(
+                                rx.icon("shopping-cart", class_name="h-5 w-5"),
+                                rx.cond(
+                                    ShopState.cart_count > 0,
+                                    rx.el.span(
+                                        ShopState.cart_count.to_string(),
+                                        class_name="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center",
+                                    ),
+                                ),
+                                on_click=lambda: rx.redirect("/cart"),
+                                class_name="relative p-2 text-gray-600 hover:text-teal-600 cursor-pointer mr-4",
+                            ),
+                            rx.el.div(
+                                rx.image(
+                                    src=f"https://api.dicebear.com/9.x/notionists/svg?seed={AuthState.current_user['email']}",
+                                    class_name="size-8 rounded-full bg-teal-50 border border-teal-100",
+                                ),
+                                rx.el.span(
+                                    AuthState.current_user["name"],
+                                    class_name="text-sm font-bold text-gray-700 hidden lg:block",
+                                ),
+                                rx.el.button(
+                                    rx.icon("log-out", class_name="h-4 w-4"),
+                                    on_click=AuthState.logout,
+                                    class_name="p-2 text-gray-400 hover:text-red-500 transition-colors",
+                                ),
+                                class_name="flex items-center gap-3",
+                            ),
+                            class_name="flex items-center",
+                        ),
+                        rx.el.div(
+                            rx.el.button(
+                                "Log In",
+                                on_click=lambda: rx.redirect("/login"),
+                                class_name="text-teal-600 font-bold hover:bg-teal-50 px-4 py-2 rounded-xl transition-all",
+                            ),
+                            rx.el.button(
+                                "Sign Up",
+                                on_click=lambda: rx.redirect("/login"),
+                                class_name="bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold px-5 py-2 rounded-xl shadow-lg shadow-teal-500/20 hover:scale-105 transition-all",
+                            ),
+                            class_name="flex items-center gap-2",
+                        ),
+                    ),
+                    rx.el.button(
+                        rx.icon("menu", class_name="h-6 w-6"),
+                        on_click=MedicineState.toggle_mobile_menu,
+                        class_name="md:hidden p-2 text-gray-600 hover:text-teal-600 transition-colors",
+                    ),
+                    class_name="flex items-center gap-4",
                 ),
                 class_name="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16 relative z-10",
             ),
@@ -60,6 +115,7 @@ def navbar() -> rx.Component:
                 rx.el.div(
                     rx.el.div(
                         nav_link("Home", "/"),
+                        nav_link("Shop", "/shop"),
                         nav_link("Search", "/search"),
                         nav_link("Insights", "/insights"),
                         nav_link("Scan Prescription", "/scan"),
