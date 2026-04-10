@@ -47,7 +47,7 @@ class AICompareState(rx.State):
             from google.genai import types
 
             prompt = f'''You are a pharmaceutical price comparison assistant for Indian online pharmacies.\n\nFor the medicine "{medicine.get("brand_name")}" ({medicine.get("salt_composition")}, {medicine.get("dosage_form")} {medicine.get("dosage_strength")}):\n\n1. List the approximate current prices on these major Indian online pharmacies:\n   - 1mg (Tata 1mg)\n   - PharmEasy\n   - Netmeds\n   - Apollo Pharmacy Online\n   - MedPlus\n\n2. For each store, provide:\n   - Store name\n   - Approximate price (₹) for a standard pack\n   - Pack size (e.g., strip of 10, bottle of 100ml)\n   - Availability status (Available / Likely Available / Check Store)\n\n3. Also mention the generic alternative "{medicine.get("generic_name")}" prices if available on these platforms.\n\n4. End with a brief "💡 Best Deal" recommendation.\n\nFormat your response in clean markdown with a table. Use ₹ symbol for prices.\nKeep it concise and practical.'''
-            models_to_try = ["gemini-2.5-flash", "gemini-2.5-flash-lite"]
+            models_to_try = ["gemini-2.0-flash", "gemini-2.0-flash-lite"]
             last_error = None
             for model_name in models_to_try:
                 for attempt in range(3):

@@ -1,36 +1,50 @@
-# Affordable Medicine Intelligence Platform — 10 Smart Features Upgrade
+# Affordable Medicine Intelligence Platform — Full Feature Upgrade
 
 ## Phase 1: Smart Substitution Confidence Score & Overpay Alert System ✅
-- [x] Add confidence score calculation logic to medicine state (same active ingredient +40, same dosage +30, same release type +20, regulatory approval +10)
-- [x] Add NTI drug detection and auto-cap at 60% for Warfarin, Digoxin, Lithium, Phenytoin
-- [x] Build overpay alert banner on results page (triggered when savings > ₹20/strip)
-- [x] Display confidence score badges on all alternative medicine cards with color-coded indicators
-- [x] Add overpay thresholds: >₹200/month = "Significant overpayment", >₹2000/year = grocery equivalence
+- [x] Add confidence score calculation logic to medicine state
+- [x] Add NTI drug detection and auto-cap at 60%
+- [x] Build overpay alert banner on results page
+- [x] Display confidence score badges on all alternative medicine cards
+- [x] Add overpay thresholds
 
 ## Phase 2: Explain Like a Doctor, Monthly Cost Optimizer & Price Trends ✅
-- [x] Build "Explain Like a Doctor" panel on results page with plain English explanation, mechanism, safety info, side effects
-- [x] Create Monthly Cost Optimizer with table showing current vs optimized costs for each medicine
-- [x] Add price trend simulation data (3-month history, rising/falling/stable indicators)
-- [x] Build price alert banners for overpriced medicines (>20% above average)
-- [x] Add annual savings projection for chronic condition medicines
+- [x] Build "Explain Like a Doctor" panel
+- [x] Create Monthly Cost Optimizer
+- [x] Add price trend simulation data
+- [x] Build price alert banners
+- [x] Add annual savings projection
 
 ## Phase 3: Smart Pharmacy Ranking, Community Trust, Drug Interactions & Jan Aushadhi Integration ✅
-- [x] Implement Smart Pharmacy Score algorithm (price 40%, distance 30%, availability 20%, trust 10%)
-- [x] Add community trust signals section with user confirmation counts, ratings, and issue reports
-- [x] Build drug interaction checker for multiple medicines with severity levels (severe/moderate/mild)
-- [x] Enhance Jan Aushadhi integration with government badge, price comparison, and nearest kendra
-- [x] Polish combined output structure: overpay alert → overview → explanation → alternatives → Jan Aushadhi → trends → cost optimizer → pharmacy ranking → community trust → interactions
+- [x] Implement Smart Pharmacy Score algorithm
+- [x] Add community trust signals section
+- [x] Build drug interaction checker
+- [x] Enhance Jan Aushadhi integration
+- [x] Polish combined output structure
 
 ## Phase 4: Login/Signup Page & Auth State ✅
-- [x] Create AuthState with login/signup/logout, session tracking, user profile (name, email, phone, address)
-- [x] Build login page with email/password form, "Remember me", forgot password link
-- [x] Build signup page with name, email, phone, password, confirm password, validation
-- [x] Add auth-aware navbar (show user avatar + name when logged in, login/signup buttons when not)
-- [x] Protect cart and checkout routes behind auth guard (redirect to login if not logged in)
+- [x] Create AuthState with login/signup/logout
+- [x] Build login page with email/password
+- [x] Build signup page with validation
+- [x] Add auth-aware navbar
+- [x] Protect checkout route behind auth guard
 
 ## Phase 5: Online Medicine Shopping — Shop Page, Cart & Checkout ✅
-- [x] Create ShopState with cart management (add/remove/update qty), order history, checkout flow
-- [x] Build /shop page with medicine product cards (image placeholder, name, price, add-to-cart, qty selector)
-- [x] Build /cart page with cart items list, quantity controls, subtotal/total, "Proceed to Checkout" button
-- [x] Build /checkout page with delivery address form, order summary, payment method selection, place order
-- [x] Add cart icon with badge count in navbar, order confirmation toast, order success page
+- [x] Create ShopState with cart management
+- [x] Build /shop page with product cards
+- [x] Build /cart page
+- [x] Build /checkout page
+- [x] Add cart icon with badge count in navbar
+
+## Phase 6: Enhanced Auth with Database, Password Hashing, Sessions & Profile
+- [ ] Create SQLModel database models (User, UserMedicine, MedicineReminder) with proper fields (UUID PKs, hashed passwords, provider, email_verified)
+- [ ] Implement bcrypt password hashing in AuthState (hash on signup, verify on login)
+- [ ] Add secure session token generation and cookie-based session persistence
+- [ ] Rebuild login/signup to use database with proper error handling and duplicate prevention
+- [ ] Add logout confirmation modal popup ("Are you sure?")
+
+## Phase 7: Medicine Expiry Tracker, Reminders & Profile Page
+- [ ] Build /profile page showing user info, editable fields, saved medicines list
+- [ ] Build /tracker page for Medicine Expiry Tracker (add medicine name, expiry date, dosage, reminders)
+- [ ] Add medicine CRUD operations (add/edit/delete tracked medicines)
+- [ ] Add reminder system (set reminder time, frequency daily/weekly, toggle active)
+- [ ] Add expiry monitoring dashboard (color-coded: expired/expiring soon/safe, sorted by expiry date)

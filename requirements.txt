@@ -1,5 +1,8 @@
-reflex==0.8.26
-pytesseract
 pillow
-reflex-enterprise
+pytesseract
 google-genai
+typing-extensions
+reflex-enterprise
+bcrypt
+reflex==0.8.26
+sqlmodel
