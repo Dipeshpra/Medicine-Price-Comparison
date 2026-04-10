@@ -810,6 +810,39 @@ class PharmacyState(rx.State):
             results.sort(key=lambda x: x["distance_km"])
         return results
 
+    @rx.var
+    def smart_ranked_pharmacies(
+        self,
+    ) -> list[dict[str, str | int | float | bool | list[int]]]:
+        pharmacies = self.filtered_pharmacies
+        if not pharmacies:
+            return []
+        max_dist = max([p["distance_km"] for p in pharmacies]) if pharmacies else 1
+        if max_dist == 0:
+            max_dist = 1
+        ranked = []
+        for p in pharmacies:
+            dist_score = max(0, 1 - p["distance_km"] / max_dist) * 30
+            avail_score = 20 if p["is_open"] else 5
+            trust_score = p["rating"] / 5.0 * 10
+            price_score = (
+                40
+                if p["type"] == "Jan Aushadhi Kendra"
+                else 30
+                if p["type"] == "Generic Store"
+                else 20
+            )
+            smart_score = round(dist_score + avail_score + trust_score + price_score)
+            new_p = dict(p)
+            new_p["smart_score"] = min(smart_score, 100)
+            new_p["price_score"] = round(price_score)
+            new_p["dist_score"] = round(dist_score)
+            new_p["avail_score"] = round(avail_score)
+            new_p["trust_score"] = round(trust_score, 1)
+            ranked.append(new_p)
+        ranked.sort(key=lambda x: x["smart_score"], reverse=True)
+        return ranked
+
     @rx.event
     def set_search_filter(self, val: str):
         self.search_filter = val

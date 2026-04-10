@@ -5,6 +5,7 @@ from app.states.pharmacy_state import PharmacyState
 from app.states.search_page_state import SearchPageState
 from app.states.dashboard_state import DashboardState
 from app.states.ai_compare_state import AICompareState
+from app.states.smart_features_state import SmartFeaturesState
 from app.components.navbar import navbar
 from app.components.search_bar import search_section
 from app.components.footer import footer
@@ -296,6 +297,85 @@ def results_page() -> rx.Component:
         navbar(),
         rx.el.div(
             rx.cond(
+                SmartFeaturesState.overpay_data["show_alert"].to(bool),
+                rx.el.div(
+                    rx.el.div(
+                        rx.el.div(
+                            rx.icon(
+                                "triangle_alert",
+                                class_name="h-12 w-12 text-red-600 mr-4 animate-bounce",
+                            ),
+                            rx.el.div(
+                                rx.el.h3(
+                                    "🚨 OVERPAY ALERT",
+                                    class_name="text-2xl font-black text-red-900 mb-1",
+                                ),
+                                rx.el.p(
+                                    "You are currently overpaying by ₹",
+                                    SmartFeaturesState.overpay_data[
+                                        "per_strip"
+                                    ].to_string(),
+                                    " per strip for ",
+                                    MedicineState.selected_medicine["brand_name"],
+                                    class_name="text-red-800 font-bold",
+                                ),
+                                rx.cond(
+                                    SmartFeaturesState.overpay_data["severity"]
+                                    == "critical",
+                                    rx.el.p(
+                                        "📅 You could save ₹",
+                                        SmartFeaturesState.overpay_data[
+                                            "per_year"
+                                        ].to_string(),
+                                        "/year — equivalent to ",
+                                        SmartFeaturesState.overpay_data[
+                                            "grocery_days"
+                                        ].to_string(),
+                                        " days of groceries",
+                                        class_name="text-amber-800 font-black mt-2",
+                                    ),
+                                ),
+                                rx.cond(
+                                    SmartFeaturesState.overpay_data["severity"]
+                                    == "significant",
+                                    rx.el.p(
+                                        "💸 Significant monthly overpayment of ₹",
+                                        SmartFeaturesState.overpay_data[
+                                            "per_month"
+                                        ].to_string(),
+                                        " detected",
+                                        class_name="text-amber-700 font-bold mt-1",
+                                    ),
+                                ),
+                                rx.el.p(
+                                    "See verified alternatives below ↓",
+                                    class_name="text-red-600 text-xs font-black uppercase mt-4 tracking-widest",
+                                ),
+                            ),
+                            class_name="flex items-start",
+                        ),
+                        class_name="max-w-7xl mx-auto px-4",
+                    ),
+                    class_name="bg-gradient-to-r from-red-50 to-amber-50 border-l-8 border-red-500 p-8 rounded-2xl mb-8 shadow-2xl animate-fade-in-up",
+                ),
+            ),
+            rx.cond(
+                SmartFeaturesState.is_nti_drug,
+                rx.el.div(
+                    rx.el.div(
+                        rx.icon(
+                            "triangle-alert", class_name="h-6 w-6 text-red-700 mr-3"
+                        ),
+                        rx.el.p(
+                            "⚠️ NTI Drug — This medicine has a Narrow Therapeutic Index. Doctor approval required before switching to any alternative.",
+                            class_name="text-red-900 font-black",
+                        ),
+                        class_name="flex items-center justify-center bg-red-100 border-2 border-red-200 p-4 rounded-2xl mb-8",
+                    ),
+                    class_name="max-w-7xl mx-auto px-4",
+                ),
+            ),
+            rx.cond(
                 MedicineState.price_alert_active,
                 rx.el.div(
                     rx.icon(
@@ -560,12 +640,14 @@ def results_page() -> rx.Component:
                                                 "is_jan_aushadhi"
                                             ],
                                             rx.el.div(
-                                                rx.icon(
-                                                    "star",
-                                                    class_name="h-4 w-4 mr-2 fill-purple-700",
-                                                ),
-                                                "Jan Aushadhi",
-                                                class_name="flex items-center px-4 py-2 bg-purple-50 text-purple-700 text-xs font-black rounded-full shadow-sm border border-purple-100",
+                                                rx.el.div(
+                                                    rx.icon(
+                                                        "star",
+                                                        class_name="h-4 w-4 mr-2 fill-purple-700",
+                                                    ),
+                                                    "Jan Aushadhi",
+                                                    class_name="flex items-center px-4 py-2 bg-purple-50 text-purple-700 text-xs font-black rounded-full shadow-sm border border-purple-100",
+                                                )
                                             ),
                                         ),
                                         class_name="flex flex-wrap gap-3 mb-12",
@@ -701,7 +783,7 @@ def results_page() -> rx.Component:
                     ),
                     rx.el.div(
                         rx.el.h3(
-                            "Multi-Brand Comparison",
+                            "Multi-Brand Comparison & Safety Score",
                             class_name="text-2xl font-black text-gray-900 mb-8 mt-16 text-center",
                         ),
                         rx.el.div(
@@ -720,11 +802,15 @@ def results_page() -> rx.Component:
                                             "Price",
                                             class_name="text-right py-5 px-6 text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-100",
                                         ),
+                                        rx.el.th(
+                                            "Confidence Score",
+                                            class_name="text-center py-5 px-6 text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-100",
+                                        ),
                                     )
                                 ),
                                 rx.el.tbody(
                                     rx.foreach(
-                                        MedicineState.sorted_alternatives,
+                                        SmartFeaturesState.alternatives_with_confidence,
                                         lambda alt: rx.el.tr(
                                             rx.el.td(
                                                 rx.el.div(
@@ -735,15 +821,8 @@ def results_page() -> rx.Component:
                                                     rx.cond(
                                                         alt["is_generic"],
                                                         rx.el.span(
-                                                            "BEST VALUE",
+                                                            "GENERIC",
                                                             class_name="ml-3 px-2 py-0.5 bg-green-100 text-green-700 text-[9px] font-black rounded-full",
-                                                        ),
-                                                    ),
-                                                    rx.cond(
-                                                        alt["is_prescribed"],
-                                                        rx.el.span(
-                                                            "PRESCRIBED",
-                                                            class_name="ml-3 px-2 py-0.5 bg-gray-100 text-gray-500 text-[9px] font-black rounded-full",
                                                         ),
                                                     ),
                                                     class_name="flex items-center",
@@ -758,11 +837,52 @@ def results_page() -> rx.Component:
                                                 "₹" + alt["price"].to_string(),
                                                 class_name="py-5 px-6 text-right font-black text-teal-600 border-b border-gray-50",
                                             ),
+                                            rx.el.td(
+                                                rx.el.div(
+                                                    rx.el.div(
+                                                        rx.el.span(
+                                                            alt[
+                                                                "confidence_score"
+                                                            ].to_string()
+                                                            + "% "
+                                                            + alt[
+                                                                "confidence_emoji"
+                                                            ].to_string()
+                                                        ),
+                                                        class_name=rx.match(
+                                                            alt["confidence_color"],
+                                                            (
+                                                                "green",
+                                                                "px-3 py-1 bg-green-100 text-green-700 border border-green-200 rounded-full text-[10px] font-black shadow-sm",
+                                                            ),
+                                                            (
+                                                                "yellow",
+                                                                "px-3 py-1 bg-yellow-100 text-yellow-700 border border-yellow-200 rounded-full text-[10px] font-black shadow-sm",
+                                                            ),
+                                                            (
+                                                                "orange",
+                                                                "px-3 py-1 bg-orange-100 text-orange-700 border border-orange-200 rounded-full text-[10px] font-black shadow-sm",
+                                                            ),
+                                                            (
+                                                                "red",
+                                                                "px-3 py-1 bg-red-100 text-red-700 border border-red-200 rounded-full text-[10px] font-black shadow-sm",
+                                                            ),
+                                                            "px-3 py-1 bg-gray-100 text-gray-700 border border-gray-200 rounded-full text-[10px] font-black shadow-sm",
+                                                        ),
+                                                    ),
+                                                    rx.el.span(
+                                                        alt["confidence_label"],
+                                                        class_name="text-[9px] text-gray-400 font-bold mt-1 block",
+                                                    ),
+                                                    class_name="flex flex-col items-center",
+                                                ),
+                                                class_name="py-5 px-6 text-center border-b border-gray-50",
+                                            ),
                                             class_name="hover:bg-teal-50/30 transition-colors",
                                         ),
                                     )
                                 ),
-                                class_name="min-w-full",
+                                class_name="min-w-full table-auto",
                             ),
                             class_name="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm overflow-x-auto",
                         ),
@@ -907,6 +1027,463 @@ def results_page() -> rx.Component:
                             ),
                         ),
                         class_name="w-full bg-white border border-teal-100 rounded-[2.5rem] shadow-sm p-10 mt-16 border-t-8 border-t-teal-500",
+                    ),
+                    rx.cond(
+                        SmartFeaturesState.doctor_explanation["has_data"].to(bool),
+                        rx.el.div(
+                            rx.el.h3(
+                                "🩺 Explain Like a Doctor",
+                                class_name="text-2xl font-black text-gray-900 mb-6",
+                            ),
+                            rx.el.div(
+                                rx.el.div(
+                                    rx.el.div(
+                                        rx.icon(
+                                            "activity",
+                                            class_name="h-6 w-6 text-teal-600 mr-3",
+                                        ),
+                                        rx.el.h4(
+                                            "What it does",
+                                            class_name="text-lg font-bold text-gray-900",
+                                        ),
+                                        class_name="flex items-center mb-2",
+                                    ),
+                                    rx.el.p(
+                                        SmartFeaturesState.doctor_explanation[
+                                            "what_it_does"
+                                        ].to(str),
+                                        class_name="text-gray-600 pl-9",
+                                    ),
+                                    class_name="mb-6",
+                                ),
+                                rx.el.div(
+                                    rx.el.div(
+                                        rx.icon(
+                                            "file-text",
+                                            class_name="h-6 w-6 text-teal-600 mr-3",
+                                        ),
+                                        rx.el.h4(
+                                            "Why it's prescribed",
+                                            class_name="text-lg font-bold text-gray-900",
+                                        ),
+                                        class_name="flex items-center mb-2",
+                                    ),
+                                    rx.el.p(
+                                        SmartFeaturesState.doctor_explanation[
+                                            "why_prescribed"
+                                        ].to(str),
+                                        class_name="text-gray-600 pl-9",
+                                    ),
+                                    class_name="mb-6",
+                                ),
+                                rx.el.div(
+                                    rx.el.div(
+                                        rx.icon(
+                                            "microscope",
+                                            class_name="h-6 w-6 text-teal-600 mr-3",
+                                        ),
+                                        rx.el.h4(
+                                            "How it works",
+                                            class_name="text-lg font-bold text-gray-900",
+                                        ),
+                                        class_name="flex items-center mb-2",
+                                    ),
+                                    rx.el.p(
+                                        SmartFeaturesState.doctor_explanation[
+                                            "how_it_works"
+                                        ].to(str),
+                                        class_name="text-gray-600 pl-9",
+                                    ),
+                                    class_name="mb-6",
+                                ),
+                                rx.el.div(
+                                    rx.el.div(
+                                        rx.icon(
+                                            "shield-check",
+                                            class_name="h-6 w-6 text-emerald-600 mr-3",
+                                        ),
+                                        rx.el.h4(
+                                            "Is the generic safe?",
+                                            class_name="text-lg font-bold text-gray-900",
+                                        ),
+                                        class_name="flex items-center mb-2",
+                                    ),
+                                    rx.el.p(
+                                        SmartFeaturesState.doctor_explanation[
+                                            "generic_safe"
+                                        ].to(str),
+                                        class_name="text-emerald-700 font-medium pl-9",
+                                    ),
+                                    class_name="mb-6",
+                                ),
+                                rx.el.div(
+                                    rx.el.div(
+                                        rx.icon(
+                                            "triangle-alert",
+                                            class_name="h-6 w-6 text-amber-600 mr-3",
+                                        ),
+                                        rx.el.h4(
+                                            "Watch out for",
+                                            class_name="text-lg font-bold text-gray-900",
+                                        ),
+                                        class_name="flex items-center mb-2",
+                                    ),
+                                    rx.el.p(
+                                        SmartFeaturesState.doctor_explanation[
+                                            "watch_out"
+                                        ].to(str),
+                                        class_name="text-amber-700 pl-9",
+                                    ),
+                                    class_name="mb-6",
+                                ),
+                                class_name="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2",
+                            ),
+                            rx.el.p(
+                                "This is general information. Always follow your doctor's prescription.",
+                                class_name="text-xs text-gray-400 text-center mt-6 pt-4 border-t border-gray-100",
+                            ),
+                            class_name="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm mt-12 mb-8",
+                        ),
+                    ),
+                    rx.el.div(
+                        rx.cond(
+                            SmartFeaturesState.price_trend_data["has_data"].to(bool),
+                            rx.el.div(
+                                rx.el.div(
+                                    rx.el.h3(
+                                        "📊 Price Trend",
+                                        class_name="text-2xl font-black text-gray-900",
+                                    ),
+                                    rx.el.div(
+                                        SmartFeaturesState.price_trend_data[
+                                            "trend_icon"
+                                        ].to(str),
+                                        " ",
+                                        SmartFeaturesState.price_trend_data[
+                                            "change_pct"
+                                        ].to(str),
+                                        "% ",
+                                        SmartFeaturesState.price_trend_data["trend"].to(
+                                            str
+                                        ),
+                                        class_name="px-3 py-1 rounded-full text-sm font-bold bg-gray-100 text-gray-700 flex items-center",
+                                    ),
+                                    class_name="flex justify-between items-center mb-6",
+                                ),
+                                rx.cond(
+                                    SmartFeaturesState.price_trend_data["alert"].to(str)
+                                    != "",
+                                    rx.el.div(
+                                        SmartFeaturesState.price_trend_data["alert"].to(
+                                            str
+                                        ),
+                                        class_name="bg-red-50 text-red-700 p-3 rounded-xl text-sm font-bold mb-6",
+                                    ),
+                                ),
+                                rx.recharts.line_chart(
+                                    rx.recharts.cartesian_grid(
+                                        stroke_dasharray="3 3",
+                                        horizontal=True,
+                                        vertical=False,
+                                    ),
+                                    rx.recharts.graphing_tooltip(separator=""),
+                                    rx.recharts.line(
+                                        data_key="brand",
+                                        stroke="#ef4444",
+                                        name="Brand Price",
+                                        type_="monotone",
+                                    ),
+                                    rx.recharts.line(
+                                        data_key="generic",
+                                        stroke="#0d9488",
+                                        name="Generic Price",
+                                        type_="monotone",
+                                    ),
+                                    rx.recharts.x_axis(
+                                        data_key="month",
+                                        tick_line=False,
+                                        axis_line=False,
+                                        custom_attrs={"fontSize": "12px"},
+                                    ),
+                                    rx.recharts.y_axis(
+                                        tick_line=False,
+                                        axis_line=False,
+                                        custom_attrs={"fontSize": "12px"},
+                                    ),
+                                    data=SmartFeaturesState.price_trend_data[
+                                        "history"
+                                    ].to(list),
+                                    width="100%",
+                                    height=250,
+                                ),
+                                rx.el.div(
+                                    rx.el.div(
+                                        rx.el.span(
+                                            class_name="w-3 h-3 rounded-full bg-red-500 mr-2 inline-block"
+                                        ),
+                                        rx.el.span(
+                                            "Brand Price",
+                                            class_name="text-xs text-gray-600 font-bold",
+                                        ),
+                                        class_name="flex items-center",
+                                    ),
+                                    rx.el.div(
+                                        rx.el.span(
+                                            class_name="w-3 h-3 rounded-full bg-teal-600 mr-2 inline-block"
+                                        ),
+                                        rx.el.span(
+                                            "Generic Price",
+                                            class_name="text-xs text-gray-600 font-bold",
+                                        ),
+                                        class_name="flex items-center",
+                                    ),
+                                    class_name="flex justify-center gap-6 mt-4",
+                                ),
+                                class_name="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm h-full",
+                            ),
+                        ),
+                        rx.cond(
+                            SmartFeaturesState.cost_optimizer_data["has_data"].to(bool),
+                            rx.el.div(
+                                rx.el.h3(
+                                    "💰 Monthly Cost Optimizer",
+                                    class_name="text-2xl font-black text-gray-900 mb-6",
+                                ),
+                                rx.el.div(
+                                    rx.el.p(
+                                        "Dosage: ",
+                                        SmartFeaturesState.cost_optimizer_data[
+                                            "doses_per_day"
+                                        ].to(str),
+                                        " per day",
+                                        class_name="text-sm text-gray-500 font-bold mb-4",
+                                    ),
+                                    rx.el.div(
+                                        rx.el.div(
+                                            rx.el.p(
+                                                "Current Brand",
+                                                class_name="text-xs text-gray-400 font-bold uppercase",
+                                            ),
+                                            rx.el.p(
+                                                "₹",
+                                                SmartFeaturesState.cost_optimizer_data[
+                                                    "brand_monthly"
+                                                ].to(str),
+                                                "/mo",
+                                                class_name="text-xl font-bold text-gray-900 line-through",
+                                            ),
+                                        ),
+                                        rx.el.div(
+                                            rx.el.p(
+                                                "Best Generic",
+                                                class_name="text-xs text-teal-600 font-bold uppercase",
+                                            ),
+                                            rx.el.p(
+                                                "₹",
+                                                SmartFeaturesState.cost_optimizer_data[
+                                                    "generic_monthly"
+                                                ].to(str),
+                                                "/mo",
+                                                class_name="text-2xl font-black text-teal-600",
+                                            ),
+                                        ),
+                                        class_name="flex justify-between items-center p-4 bg-gray-50 rounded-2xl mb-4",
+                                    ),
+                                    rx.el.div(
+                                        rx.el.p(
+                                            "Monthly Savings",
+                                            class_name="text-sm font-bold text-gray-700",
+                                        ),
+                                        rx.el.p(
+                                            "₹",
+                                            SmartFeaturesState.cost_optimizer_data[
+                                                "monthly_savings"
+                                            ].to(str),
+                                            class_name="text-xl font-black text-green-600",
+                                        ),
+                                        class_name="flex justify-between items-center p-4 border border-gray-100 rounded-2xl mb-6",
+                                    ),
+                                    rx.cond(
+                                        SmartFeaturesState.cost_optimizer_data[
+                                            "is_chronic"
+                                        ].to(bool),
+                                        rx.el.div(
+                                            rx.el.p(
+                                                "Annual Projected Savings",
+                                                class_name="text-sm font-bold text-green-800 mb-1",
+                                            ),
+                                            rx.el.p(
+                                                "₹",
+                                                SmartFeaturesState.cost_optimizer_data[
+                                                    "annual_savings"
+                                                ].to(str),
+                                                class_name="text-4xl font-black text-green-600",
+                                            ),
+                                            class_name="bg-green-50 p-6 rounded-2xl border border-green-100 text-center",
+                                        ),
+                                        rx.el.div(
+                                            rx.el.p(
+                                                "Course Savings",
+                                                class_name="text-sm font-bold text-green-800 mb-1",
+                                            ),
+                                            rx.el.p(
+                                                "₹",
+                                                SmartFeaturesState.cost_optimizer_data[
+                                                    "monthly_savings"
+                                                ].to(str),
+                                                class_name="text-3xl font-black text-green-600",
+                                            ),
+                                            class_name="bg-green-50 p-6 rounded-2xl border border-green-100 text-center",
+                                        ),
+                                    ),
+                                ),
+                                class_name="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm h-full",
+                            ),
+                        ),
+                        class_name="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-8 mb-16",
+                    ),
+                    rx.cond(
+                        SmartFeaturesState.drug_interactions.length() > 0,
+                        rx.el.div(
+                            rx.el.h3(
+                                "⚠️ Drug Interaction Check",
+                                class_name="text-2xl font-black text-gray-900 mb-6",
+                            ),
+                            rx.el.div(
+                                rx.foreach(
+                                    SmartFeaturesState.drug_interactions,
+                                    lambda interaction: rx.el.div(
+                                        rx.el.div(
+                                            rx.el.span(
+                                                rx.match(
+                                                    interaction["severity"],
+                                                    ("severe", "🔴 Severe"),
+                                                    ("moderate", "🟠 Moderate"),
+                                                    "🟡 Mild",
+                                                ),
+                                                class_name="font-black mr-2",
+                                            ),
+                                            rx.el.span(
+                                                interaction["drug_a"],
+                                                " + ",
+                                                interaction["drug_b"],
+                                                class_name="font-bold",
+                                            ),
+                                            class_name="mb-2",
+                                        ),
+                                        rx.el.p(
+                                            interaction["effect"],
+                                            class_name="text-sm mb-1",
+                                        ),
+                                        rx.el.p(
+                                            "Advice: ",
+                                            interaction["advice"],
+                                            class_name="text-sm font-medium",
+                                        ),
+                                        class_name=rx.match(
+                                            interaction["severity"],
+                                            (
+                                                "severe",
+                                                "bg-red-50 text-red-900 border-l-4 border-red-500 p-4 mb-4 rounded-r-xl",
+                                            ),
+                                            (
+                                                "moderate",
+                                                "bg-orange-50 text-orange-900 border-l-4 border-orange-500 p-4 mb-4 rounded-r-xl",
+                                            ),
+                                            "bg-yellow-50 text-yellow-900 border-l-4 border-yellow-500 p-4 mb-4 rounded-r-xl",
+                                        ),
+                                    ),
+                                ),
+                                rx.el.p(
+                                    "This is an automated check — always consult your doctor or pharmacist.",
+                                    class_name="text-xs text-gray-500 mt-4",
+                                ),
+                                class_name="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm mb-16",
+                            ),
+                        ),
+                    ),
+                    rx.cond(
+                        SmartFeaturesState.community_trust["has_data"].to(bool),
+                        rx.el.div(
+                            rx.el.h3(
+                                "🤝 Community Trust Signals",
+                                class_name="text-2xl font-black text-gray-900 mb-6",
+                            ),
+                            rx.el.div(
+                                rx.el.div(
+                                    rx.icon(
+                                        "message_circle_check",
+                                        class_name="h-5 w-5 text-green-500 mr-2",
+                                    ),
+                                    rx.el.span(
+                                        SmartFeaturesState.community_trust[
+                                            "confirmed_works"
+                                        ].to(str),
+                                        " users confirmed: 'Generic worked fine for me'",
+                                        class_name="font-medium text-gray-700",
+                                    ),
+                                    class_name="flex items-center mb-4",
+                                ),
+                                rx.el.div(
+                                    rx.icon(
+                                        "map-pin",
+                                        class_name="h-5 w-5 text-blue-500 mr-2",
+                                    ),
+                                    rx.el.span(
+                                        SmartFeaturesState.community_trust[
+                                            "confirmed_available"
+                                        ].to(str),
+                                        " users confirmed: 'Available nearby'",
+                                        class_name="font-medium text-gray-700",
+                                    ),
+                                    class_name="flex items-center mb-4",
+                                ),
+                                rx.el.div(
+                                    rx.icon(
+                                        "star",
+                                        class_name="h-5 w-5 text-yellow-400 fill-yellow-400 mr-2",
+                                    ),
+                                    rx.el.span(
+                                        "Community rating: ",
+                                        SmartFeaturesState.community_trust["rating"].to(
+                                            str
+                                        ),
+                                        "/5 based on ",
+                                        SmartFeaturesState.community_trust[
+                                            "total_reports"
+                                        ].to(str),
+                                        " reports",
+                                        class_name="font-medium text-gray-700",
+                                    ),
+                                    class_name="flex items-center mb-4",
+                                ),
+                                rx.cond(
+                                    SmartFeaturesState.community_trust[
+                                        "issues_count"
+                                    ].to(int)
+                                    > 0,
+                                    rx.el.div(
+                                        rx.icon(
+                                            "flag",
+                                            class_name="h-5 w-5 text-red-500 mr-2",
+                                        ),
+                                        rx.el.span(
+                                            SmartFeaturesState.community_trust[
+                                                "issue_text"
+                                            ].to(str),
+                                            class_name="font-medium text-red-700",
+                                        ),
+                                        class_name="flex items-center mb-4 bg-red-50 p-2 rounded-xl",
+                                    ),
+                                ),
+                                rx.el.p(
+                                    "Community reports are user experiences, not medical endorsements.",
+                                    class_name="text-xs text-gray-500 mt-4",
+                                ),
+                                class_name="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm",
+                            ),
+                            class_name="mb-16",
+                        ),
                     ),
                 ),
                 class_name="max-w-7xl mx-auto px-4 py-16",
@@ -1226,10 +1803,10 @@ def pharmacies_page() -> rx.Component:
                 class_name="w-full h-[400px] rounded-2xl border-2 border-gray-100 mb-12 relative overflow-hidden",
             ),
             rx.cond(
-                PharmacyState.filtered_pharmacies.length() > 0,
+                PharmacyState.smart_ranked_pharmacies.length() > 0,
                 rx.el.div(
                     rx.foreach(
-                        PharmacyState.filtered_pharmacies,
+                        PharmacyState.smart_ranked_pharmacies,
                         lambda p: rx.el.div(
                             rx.el.div(
                                 rx.el.h3(
@@ -1252,6 +1829,14 @@ def pharmacies_page() -> rx.Component:
                                     ),
                                 ),
                                 class_name="flex justify-between items-start mb-2",
+                            ),
+                            rx.el.div(
+                                rx.el.span(
+                                    "Smart Score: ",
+                                    p["smart_score"].to(str),
+                                    class_name="text-xs font-black text-white bg-gradient-to-r from-teal-500 to-emerald-500 px-2 py-1 rounded-md",
+                                ),
+                                class_name="mb-2",
                             ),
                             rx.el.p(
                                 p["address"],
