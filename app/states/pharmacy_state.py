@@ -662,8 +662,19 @@ class PharmacyState(rx.State):
             self.user_lat = lat
             self.user_lng = lng
             self.location_status = "allowed"
-            self.selected_city = ""
-            self.city_search = ""
+            nearest_city = None
+            min_dist = float("inf")
+            for city in self.INDIAN_CITIES:
+                dist = self._haversine(lat, lng, city["lat"], city["lng"])
+                if dist < min_dist:
+                    min_dist = dist
+                    nearest_city = city
+            if nearest_city and min_dist <= 50:
+                self.selected_city = nearest_city["name"]
+                self.city_search = nearest_city["name"]
+            else:
+                self.selected_city = ""
+                self.city_search = ""
             updated = []
             for p in self.pharmacies:
                 new_p = dict(p)
